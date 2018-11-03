@@ -5,7 +5,10 @@
   "an" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'next-day))))
   "ab" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'previous-week))))
   "af" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'next-week))))
+  "ao" 'spacemacs/custom-perspective-@Agenda-opruim-layout
   "ar" 'md-agenda-rename-this-file
+  "ab" 'md-agenda-compile-hakyll-site
+  "av" 'md-agenda-open-file-in-hakyll-site
   "aa" 'spacemacs/md-agenda-transient-state-transient-state/body)
 
 (spacemacs|define-transient-state md-agenda-transient-state

@@ -1,3 +1,10 @@
+(defcustom md-agenda-hakyll-site-root (expand-file-name "~/proj/hakyll-site/")
+  "Directory of the Hakyll site where the notes from the markdown-agenda will be compiled..
+Should contain a file 'build-script.sh'."
+  :group 'md-agenda
+  :type 'string)
+
+
 (defun md-agenda--get-file-name (desc)
   "Return the file name for my agenda file for a specific date.
 Can be either a symbol ('tomorrow, 'today, 'week), or the number
@@ -85,6 +92,27 @@ a file called 2018-W31-1-123412.md can be renamed to
   (if (string-match "\\([0-9]\\{4\\}-W[0-9]\\{2\\}-[1-7]\\)" filename)
       (match-string-no-properties 0 filename)
     nil))
+
+(defun md-agenda-compile-hakyll-site ()
+  (interactive)
+  (let ((buildscript (concat (file-name-as-directory md-agenda-hakyll-site-root) "build-script.sh")))
+    (async-shell-command buildscript)))
+
+(defun md-agenda-open-file-in-hakyll-site (&optional new-window-q)
+  "Open the current markdown agenda file in the hakyll site.
+With prefix argument, open it in new firefox window."
+  (interactive "P")
+  (let*
+      ((project-root (projectile-project-root))
+       (rel-filename-sans-ext (file-name-sans-extension (file-relative-name (buffer-file-name) project-root)))
+       (target-html-file
+        (concat
+         (file-name-as-directory md-agenda-hakyll-site-root)
+         "_site/doc/"
+         rel-filename-sans-ext
+         ".html")))
+    (browse-url-firefox target-html-file new-window-q)))
+
 
 ;; Test:
 ;; (md--get-day-from-filename "2018-W34-4-123123.md") ; should return "2018-W34-4"
