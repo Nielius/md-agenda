@@ -93,9 +93,16 @@ a file called 2018-W31-1-123412.md can be renamed to
       (match-string-no-properties 0 filename)
     nil))
 
-(defun md-agenda-compile-hakyll-site ()
-  (interactive)
-  (let ((buildscript (concat (file-name-as-directory md-agenda-hakyll-site-root) "build-script.sh")))
+(defun md-agenda-compile-hakyll-site (&optional git-pull-q)
+  "Compile the Hakyll site.
+With prefix argument, also git pull before compiling."
+  (interactive "P")
+  (let ((buildscript (concat
+                      (file-name-as-directory md-agenda-hakyll-site-root)
+                      "build-script.sh"
+                      (if git-pull-q
+                          " -g"
+                        ""))))
     (async-shell-command buildscript)))
 
 (defun md-agenda-open-file-in-hakyll-site (&optional new-window-q)
