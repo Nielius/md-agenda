@@ -125,3 +125,34 @@ With prefix argument, open it in new firefox window."
 ;; (md--get-day-from-filename "2018-W34-4-123123.md") ; should return "2018-W34-4"
 ;; (md--get-day-from-filename "shouldntwork") ; should return nil
 ;; (md--get-day-from-filename nil) ; should return nil?
+
+
+
+(defun md-agenda--get-first-line ()
+  "Helper function: get the first line of the buffer."
+  (save-excursion
+    (goto-char (point-min))
+    (thing-at-point 'line t)))
+
+(defun md-agenda--extract-default-extension ()
+  "Create a suitable filename based on the first line: take the
+first string from the file, remove strange characters, and put
+hyphens in between the words."
+  (string-join
+   (split-string
+    (replace-regexp-in-string "[^[:alnum:] _-]" "" (downcase (get-first-line))))
+   "-"))
+
+(defun md-agenda-rename-file-with-default-extension ()
+  "Suggest to rename the file to the title given by the function
+md-agenda--extract-default-extension."
+  (interactive)
+  (let ((new-suffix (md-agenda--extract-default-extension) ))
+    (if (y-or-n-p (format "Rename file with suffix %s?" new-suffix))
+        (md-agenda-rename-this-file new-suffix)
+      (message "Aborted."))))
+
+;; Test:
+;; (md-agenda--extract-default-extension)
+
+
