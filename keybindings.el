@@ -7,6 +7,7 @@
   "af" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'next-week))))
   "ao" 'spacemacs/custom-perspective-@Agenda-opruim-layout
   "ar" 'md-agenda-rename-this-file
+  "aR" 'md-agenda-start-renaming-session
   "ad" 'md-agenda-rename-file-with-default-extension
   "ab" 'md-agenda-compile-hakyll-site
   "av" 'md-agenda-open-file-in-hakyll-site

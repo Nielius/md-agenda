@@ -4,6 +4,11 @@ Should contain a file 'build-script.sh'."
   :group 'md-agenda
   :type 'string)
 
+(defcustom md-agenda-folder "~/doc/notes/agenda"
+  "Folder that contains all markdown agenda files."
+  :type 'string
+  :group 'md-agenda)
+
 
 (defun md-agenda--get-file-name (desc)
   "Return the file name for my agenda file for a specific date.
@@ -127,7 +132,6 @@ With prefix argument, open it in new firefox window."
 ;; (md--get-day-from-filename nil) ; should return nil?
 
 
-
 (defun md-agenda--get-first-line ()
   "Helper function: get the first line of the buffer."
   (save-excursion
@@ -140,7 +144,7 @@ first string from the file, remove strange characters, and put
 hyphens in between the words."
   (string-join
    (split-string
-    (replace-regexp-in-string "[^[:alnum:] _-]" "" (downcase (get-first-line))))
+    (replace-regexp-in-string "[^[:alnum:] _-]" "" (downcase (md-agenda--get-first-line))))
    "-"))
 
 (defun md-agenda-rename-file-with-default-extension ()
@@ -150,9 +154,34 @@ md-agenda--extract-default-extension."
   (let ((new-suffix (md-agenda--extract-default-extension) ))
     (if (y-or-n-p (format "Rename file with suffix %s?" new-suffix))
         (md-agenda-rename-this-file new-suffix)
-      (message "Aborted."))))
+      (progn
+        (message "Aborted.")
+        nil))))
 
-;; Test:
-;; (md-agenda--extract-default-extension)
 
+;; Functions for starting a file renaming session.
+;; ---
+;; This cycles through all files without a descriptive name
+;; (these are files that automatically get a timestamp instead of an appropriate name)
+;; and lets you rename them.
 
+(defun md-agenda-start-renaming-session ()
+  (interactive)
+  ;; (md-agenda-start-renaming-session--loop (md-agenda--get-list-of-files-with-undescriptive-names))
+  (let ((file-list (md-agenda--get-list-of-files-with-undescriptive-names)))
+    (if file-list
+        (mapcar 'md-agenda--open-file-and-rename file-list)
+      (message (format "No files with undescriptive suffixes in %s." md-agenda-folder)))))
+
+(defun md-agenda--open-file-and-rename (filename)
+  (progn
+    (find-file filename)
+    (if (not (md-agenda-rename-file-with-default-extension)) ; if the user doesn't accept the suggestion, ask for new
+        (let ((new-suffix (read-string "Other suffix? (Empty to skip.)\t")))
+          (if (string= new-suffix "")
+              (message "File skipped.")
+            (md-agenda-rename-this-file new-suffix)
+            )))))
+
+(defun md-agenda--get-list-of-files-with-undescriptive-names ()
+  (directory-files md-agenda-folder t "20[0-9]\\{2\\}-W[0-9]\\{2\\}-[1-7]-[0-9]*.md"))
