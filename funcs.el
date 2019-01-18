@@ -185,3 +185,16 @@ md-agenda--extract-default-extension."
 
 (defun md-agenda--get-list-of-files-with-undescriptive-names ()
   (directory-files md-agenda-folder t "20[0-9]\\{2\\}-W[0-9]\\{2\\}-[1-7]-[0-9]*.md"))
+
+;; This may be a useful function?
+(defun save-this-file-name ()
+  "Append the filename of the current buffer to the buffer named
+ '*saved-files-names*'."
+  (interactive)
+  (let
+      ((filename (buffer-file-name))
+       (targetbuffer
+        (get-buffer-create "*saved-file-names*"))
+       )
+    (with-current-buffer targetbuffer
+      (insert (concat filename "\n")))))
