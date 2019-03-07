@@ -1,3 +1,8 @@
+;; Requirements:
+;; - cal-iso.el and cal.el
+;; - common lisp functions? (at least destructuring-bind)
+
+
 (defcustom md-agenda-hakyll-site-root (expand-file-name "~/proj/hakyll-site/")
   "Directory of the Hakyll site where the notes from the markdown-agenda will be compiled..
 Should contain a file 'build-script.sh'."
@@ -10,39 +15,107 @@ Should contain a file 'build-script.sh'."
   :group 'md-agenda)
 
 
+;; Functions to get filenames corresponding to certain dates
+;;
+
 (defun md-agenda--get-file-name (desc)
   "Return the file name for my agenda file for a specific date.
 Can be either a symbol ('tomorrow, 'today, 'week), or the number
 of days from today (positive, negative or zero)."
   (if (integerp desc)
-      (format-time-string "%Y-W%V-%u.md" (time-add (current-time) (* desc 24 60 60)))
+      (apply #'md-agenda--get-file-name-for-year-week-day
+             (md-agenda--add-iso-week-dates (md-agenda--current-year-week-day) (list 0 0 desc)))
     (case desc
       ('today (md-agenda--get-file-name 0))
       ('tomorrow (md-agenda--get-file-name 1))
       ('yesterday (md-agenda--get-file-name -1))
       ('next-day
-       (format-time-string "%Y-W%V-%u.md"
-                           (apply #'md-agenda--year-week-day-to-time
-                            (mapcar* #'+ '(0 0 1) (md-agenda--year-week-day-of-current-file)))))
+       (apply #'md-agenda--get-file-name-for-year-week-day
+              (md-agenda--add-iso-week-dates (md-agenda--year-week-day-of-current-file) (list 0 0 1))))
       ('previous-day
-       (format-time-string "%Y-W%V-%u.md"
-                           (apply #'md-agenda--year-week-day-to-time
-                            (mapcar* #'+ '(0 0 -1) (md-agenda--year-week-day-of-current-file)))))
-      ('previous-week
-       (format-time-string "%Y-W%V.md"
-                           (apply #'md-agenda--year-week-day-to-time
-                            (mapcar* #'+ '(0 -1 0) (md-agenda--year-week-day-of-current-file)))))
+       (apply #'md-agenda--get-file-name-for-year-week-day
+              (md-agenda--add-iso-week-dates (md-agenda--year-week-day-of-current-file) (list 0 0 -1))))
       ('next-week
-       (format-time-string "%Y-W%V.md"
-                           (apply #'md-agenda--year-week-day-to-time
-                                  (mapcar* #'+ '(0 1 0) (md-agenda--year-week-day-of-current-file)))))
-      ('week (format-time-string "%Y-W%V.md"))
-      ('week-links (format-time-string "%Y-W%V-links.md"))
-      ('week-review (format-time-string "%Y-W%V-review.md")))))
+       (apply #'md-agenda--get-file-name-for-year-week
+              (md-agenda--add-iso-week-dates (md-agenda--year-week-day-of-current-file) (list 0 1 0))))
+      ('previous-week
+       (apply #'md-agenda--get-file-name-for-year-week
+              (md-agenda--add-iso-week-dates (md-agenda--year-week-day-of-current-file) (list 0 -1 0))))
+      ('this-week
+       (apply #'md-agenda--get-file-name-for-year-week (md-agenda--current-year-week-day))))))
+
+
+(defun md-agenda--get-file-name-for-year-week-day (year week day)
+  (format "%d-W%02d-%d.md" year week day))
+
+(defun md-agenda--get-file-name-for-year-week (year week &optional rest)
+  ;; ignore if we also give a day
+  (format "%d-W%02d-planning.md" year week))
+
+
+;; General functions to manipulate ISO week dates
+;;
+;; (defun md-agenda--current-year-week-day ())
+;; (defun md-agenda--add-iso-week-dates (date1 date2))
+;;
+;; iso-cal is pretty shitty...
+;; Probably better to rewrite
+
+
+(defun md-agenda--current-year-week-day ()
+  (destructuring-bind (week day year)
+      (calendar-iso-from-absolute
+       (calendar-absolute-from-gregorian (calendar-current-date)))
+    (list year week day)))
+
+(defun md-agenda--add-iso-week-dates (date1 date2)
+  "Adds two iso week dates. Each date should be of the form (year week day),
+but the week and day do not need to fulfill the normal restrictions,
+i.e., can be arbitrarily large and negative.
+
+This uses the cal-iso.el package (but note that we use a different convention:
+the package uses (week day year), which I find illogical).
+
+This doesn't work well with negative numbers..."
+  (destructuring-bind (weekres dayres yearres)
+      (destructuring-bind (year1 week1 day1 year2 week2 day2)
+          (append date1 date2)
+        (calendar-iso-from-absolute
+         (calendar-iso-to-absolute
+         (mapcar* #'+ (list week1 day1 year1) (list week2 day2 year2)))))
+    (list yearres weekres
+          (if (= dayres 0) 7 dayres) ; calendar-iso-to-absolute has the stupid convention that 6 (Saturday) is followed by 0 (Sunday)...
+          )))
+
+
+(defun md-agenda--add-iso-week-dates (date1 date2)
+  "Adds two iso week dates.
+This just adds the two lists and tries to make sense of the result.
+
+Each date should be of the form (year week day), but the week and
+day do not need to fulfill the normal restrictions, i.e., can be
+arbitrarily large and negative."
+  (destructuring-bind (year week day)
+      (mapcar* #'+ date1 date2)
+    (md-agenda--renormalize-iso-week-date year week day)))
+
+
+(defun md-agenda--renormalize-iso-week-date (year week day)
+  "Renormalizes the iso week date, i.e., if the week number or
+  day number is larger than it should be, or even if it is negative."
+  (let ((given-time (encode-time 0 0 0 (+ (- day 1) (* 7 (- week 1))) 1 year)))
+    (mapcar
+     (lambda (x)
+       (string-to-number (format-time-string x given-time)))
+     (list "%G" "%V" "%u"))))
+
+
 
 ;; A lot of this is going back and forth between different ways to represent the
 ;; date... There should probably be a nicer pattern for this.
 
+;; This function is not necessary anymore, since we started using
+;; md-agenda--renormalize-iso-week-date.
 (defun md-agenda--year-week-day-to-time (year weekn dayn)
   "Convert a date given by year, week number and day number to an
 emacs time format. The week number and days can be out of range
@@ -58,6 +131,10 @@ Returns '(YEAR WEEK DAY)."
           (string-to-number (substring filename 6 8))
           (let ((n (string-to-number (substring filename 9 10))))
             (if (= n 0) 1 n)))))
+
+
+;; Renaming files
+;;
 
 (defun md-agenda-rename-this-file (new-suffix)
   "Rename the \"timestamp\" of this file:
