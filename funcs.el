@@ -63,29 +63,7 @@ of days from today (positive, negative or zero)."
 
 
 (defun md-agenda--current-year-week-day ()
-  (destructuring-bind (week day year)
-      (calendar-iso-from-absolute
-       (calendar-absolute-from-gregorian (calendar-current-date)))
-    (list year week day)))
-
-(defun md-agenda--add-iso-week-dates (date1 date2)
-  "Adds two iso week dates. Each date should be of the form (year week day),
-but the week and day do not need to fulfill the normal restrictions,
-i.e., can be arbitrarily large and negative.
-
-This uses the cal-iso.el package (but note that we use a different convention:
-the package uses (week day year), which I find illogical).
-
-This doesn't work well with negative numbers..."
-  (destructuring-bind (weekres dayres yearres)
-      (destructuring-bind (year1 week1 day1 year2 week2 day2)
-          (append date1 date2)
-        (calendar-iso-from-absolute
-         (calendar-iso-to-absolute
-         (mapcar* #'+ (list week1 day1 year1) (list week2 day2 year2)))))
-    (list yearres weekres
-          (if (= dayres 0) 7 dayres) ; calendar-iso-to-absolute has the stupid convention that 6 (Saturday) is followed by 0 (Sunday)...
-          )))
+  (md-agenda--emacs-time-to-year-week-day (current-time)))
 
 
 (defun md-agenda--add-iso-week-dates (date1 date2)
@@ -103,12 +81,20 @@ arbitrarily large and negative."
 (defun md-agenda--renormalize-iso-week-date (year week day)
   "Renormalizes the iso week date, i.e., if the week number or
   day number is larger than it should be, or even if it is negative."
-  (let ((given-time (encode-time 0 0 0 (+ (- day 1) (* 7 (- week 1))) 1 year)))
-    (mapcar
-     (lambda (x)
-       (string-to-number (format-time-string x given-time)))
-     (list "%G" "%V" "%u"))))
+  (md-agenda--emacs-time-to-year-week-day
+   (encode-time 0 0 0 (+ (- day 1) (* 7 (- week 1))) 1 year)))
 
+
+(defun md-agenda--emacs-time-to-year-week-day (emacstime)
+  (mapcar
+   (lambda (x)
+     (string-to-number (format-time-string x emacstime)))
+   (list "%G" "%V" "%u")))
+
+;; Test-functions
+;; (md-agenda--renormalize-iso-week-date 2019 1 8) -> 2019 2 1
+;; (md-agenda--renormalize-iso-week-date 2019 2 0) -> 2019 1 7
+;; (md-agenda--renormalize-iso-week-date 2019 2 -1) -> 2019 1 6
 
 
 ;; A lot of this is going back and forth between different ways to represent the
