@@ -261,3 +261,32 @@ md-agenda--extract-default-extension."
        )
     (with-current-buffer targetbuffer
       (insert (concat filename "\n")))))
+
+
+;; Misc. functions
+;;
+
+(defun md-agenda-go-to-agenda-dir ()
+  (interactive)
+  (progn
+    (find-file md-agenda-folder)
+    (dired-sort-other "-alt")
+    (beginning-of-buffer)
+    (forward-line 5)))
+
+(defun md-agenda-go-to-current-week-file ()
+  (interactive)
+  ;; You could also go to the file "current-week.md", but I use
+  ;; that one mostly as a trick to get easy links on my phone.
+  (find-file (concat (file-name-as-directory md-agenda-folder)
+                     (apply #'md-agenda--get-file-name-for-year-week
+                            (md-agenda--current-year-week-day)))))
+
+(defun md-agenda-go-to-todays-file ()
+  (interactive)
+  ;; You could also go to the file "current-week.md", but I use
+  ;; that one mostly as a trick to get easy links on my phone.
+  (find-file (concat (file-name-as-directory md-agenda-folder)
+                     (apply #'md-agenda--get-file-name-for-year-week-day
+                            (md-agenda--current-year-week-day)))))
+

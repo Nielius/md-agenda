@@ -13,6 +13,14 @@
   "av" 'md-agenda-open-file-in-hakyll-site
   "aa" 'spacemacs/md-agenda-transient-state-transient-state/body)
 
+
+(spacemacs/set-leader-keys
+  ;; If I get too many, I may have to move some of them to longer strings.
+  "oa" 'md-agenda-go-to-agenda-dir
+  "oc" 'md-agenda-go-to-current-week-file
+  "ot" 'md-agenda-go-to-todays-file)
+
+
 (spacemacs|define-transient-state md-agenda-transient-state
   :title "Transient state for navigating markdown files."
   :doc "Where is this doc-string?"
