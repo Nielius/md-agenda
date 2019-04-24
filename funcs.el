@@ -290,3 +290,6 @@ md-agenda--extract-default-extension."
                      (apply #'md-agenda--get-file-name-for-year-week-day
                             (md-agenda--current-year-week-day)))))
 
+(defun md-agenda-go-to-working-memory ()
+  (interactive)
+  (find-file "~/doc/notes/working-memory.md"))

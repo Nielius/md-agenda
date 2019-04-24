@@ -18,7 +18,8 @@
   ;; If I get too many, I may have to move some of them to longer strings.
   "oa" 'md-agenda-go-to-agenda-dir
   "oc" 'md-agenda-go-to-current-week-file
-  "ot" 'md-agenda-go-to-todays-file)
+  "ot" 'md-agenda-go-to-todays-file
+  "ow" 'md-agenda-go-to-working-memory)
 
 
 (spacemacs|define-transient-state md-agenda-transient-state
