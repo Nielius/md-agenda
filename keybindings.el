@@ -1,6 +1,6 @@
 (spacemacs/set-leader-keys-for-major-mode 'markdown-mode
   "at" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'today))))
-  "aw" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'week))))
+  "aw" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'this-week))))
   "ap" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'previous-day))))
   "an" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'next-day))))
   "ab" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'previous-week))))
