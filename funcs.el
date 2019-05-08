@@ -247,7 +247,8 @@ md-agenda--extract-default-extension."
             )))))
 
 (defun md-agenda--get-list-of-files-with-undescriptive-names ()
-  (directory-files md-agenda-folder t "20[0-9]\\{2\\}-W[0-9]\\{2\\}-[1-7]-[0-9]*.md"))
+  (directory-files md-agenda-folder t "^20[0-9]\\{2\\}-W[0-9]\\{2\\}-[1-7]-[0-9]*.md"))
+
 
 ;; This may be a useful function?
 (defun save-this-file-name ()
