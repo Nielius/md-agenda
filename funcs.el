@@ -2,6 +2,8 @@
 ;; - cal-iso.el and cal.el
 ;; - common lisp functions? (at least destructuring-bind)
 
+;; (require 'dash)
+
 
 (defcustom md-agenda-hakyll-site-root (expand-file-name "~/proj/hakyll-site/")
   "Directory of the Hakyll site where the notes from the markdown-agenda will be compiled..
@@ -264,6 +266,41 @@ md-agenda--extract-default-extension."
       (insert (concat filename "\n")))))
 
 
+;; Functions for inserting old date files
+;;
+;; See especially: md-agenda--insert-all-older-files
+(defun md-agenda--get-list-of-date-files (&optional latest-date)
+  "Get all files of the form
+20[0-9]\\{2\\}-W[0-9]\\{2\\}-[1-7].md (i.e., date files). If the
+optional argument is given, get all files that correspond to a
+day that is before `latest-date' (which should be the filename of
+a date file represented as a string)."
+  (let ((allfiles (directory-files md-agenda-folder t "^20[0-9]\\{2\\}-W[0-9]\\{2\\}-[1-7].md"))
+        (latest-date-chopped (file-name-base latest-date)))
+    (if latest-date
+        (-filter (lambda (x) (string<  (file-name-base x) latest-date-chopped)) allfiles)
+      allfiles)))
+
+(defun md-agenda--insert-all-older-files ()
+  "When executed in a date file (i.e., a file of the form \"2019-W33-4.md\"),
+  insert all date files that are older. In addition, it inserts a small shell
+  script that can be executed to remove all those older date files."
+  (interactive)
+  (let* ((file-date (file-name-base (buffer-file-name)))
+         (file-list (md-agenda--get-list-of-date-files file-date)))
+    (mapc (lambda (x)
+            (insert (format "rm %s\n" x))) file-list)
+    (when file-list ; only when we are in fact adding anything
+      (insert "\n\n"))
+    (mapc (lambda (x)
+            (progn
+              (insert (format "\# From %s \n\n" (file-name-base x)))
+              (forward-line 2)
+              (insert-file-contents x)
+              (insert "\n\n")
+              )) file-list)))
+
+
 ;; Misc. functions
 ;;
 
@@ -290,6 +327,13 @@ md-agenda--extract-default-extension."
   (find-file (concat (file-name-as-directory md-agenda-folder)
                      (apply #'md-agenda--get-file-name-for-year-week-day
                             (md-agenda--current-year-week-day)))))
+
+(defun md-agenda-go-to-todays-file-and-merge-old-files ()
+  (interactive)
+  (md-agenda-go-to-todays-file)
+  (save-excursion
+    (goto-char (point-max))
+    (md-agenda--insert-all-older-files)))
 
 (defun md-agenda-go-to-working-memory ()
   (interactive)
