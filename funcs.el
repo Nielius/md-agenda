@@ -423,6 +423,9 @@ Accepts an integer prefix argument to skip several weeks."
                             (md-agenda--current-year-week-day)))))
 
 (defun md-agenda-go-to-todays-file-and-merge-old-files ()
+  "Go to today's agenda file and insert all older files, together
+with a bash script that can be used to remove all those older
+files."
   (interactive)
   (md-agenda-go-to-todays-file)
   (save-excursion
