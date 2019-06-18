@@ -301,7 +301,101 @@ a date file represented as a string)."
               )) file-list)))
 
 
-;; Misc. functions
+;; 
+;;;; Agenda layout functions
+;;
+;; These are functions that provide a layout of a week that looks like an actual, physical agenda.
+;;
+;;;; Functions:
+;;
+;; md-agenda--open-agenda-layout () --- only new frame with split windows
+;; md-agenda-open-agenda (&optional weeknum) --- open agenda (on (or weeknum thisweek))
+;; md-agenda-agenda-to-week (year week) --- assumes agenda is already open and sets the agenda to the given week
+;; md-agenda-agenda-next-week () --- assumes user is in the agenda and goes to the next week
+
+
+
+(defun md-agenda--open-agenda-layout ()
+  "Make a new frame and split the windows for an agenda layout.
+Save the new windows in the global variable md-agenda--agenda-layout-windows."
+  (select-frame (make-frame)) ; make a new frame and select it
+  (toggle-frame-maximized)
+  (setq md-agenda--agenda-layout-windows
+        ;; This splits all the windows correctly and stores them in a list (split-windows),
+        ;; so that we can loop over them.
+        (list
+         (selected-window)
+         (split-window-below)
+         (progn
+           (windmove-down)
+           (split-window-below))
+         (progn
+           (windmove-up)
+           (split-window-right))
+         (progn
+           (windmove-down)
+           (split-window-right))
+         (progn
+           (windmove-down)
+           (split-window-right))
+         (let ((window-combination-resize nil)) ; otherwise, automatic rebalance => bottom three have same size
+           (windmove-right)
+           (split-window-right)))))
+
+(defun md-agenda-agenda-to-week (year week)
+  "Assuming that the agenda layout is already given
+(i.e., there are windows, saved in md-agenda--agenda-layout-windows,
+that are split in the right way for an agenda overview),
+open the given week.
+
+If year is nil, use current year."
+  ;; TODO: check whether the agenda windows are open; and maybe come up with good terminology?
+  (let ((year (or year (first (md-agenda--current-year-week-day))))
+        (i 1))
+    (mapc (lambda (window)
+            (progn
+              (select-window window)
+              (find-file
+               (concat (file-name-as-directory md-agenda-folder)
+                       (md-agenda--get-file-name-for-year-week-day year week i)))
+              (setf i (+ i 1))))
+          md-agenda--agenda-layout-windows)))
+
+(defun md-agenda-open-agenda (&optional weeknum)
+  "Makes a new frame with split windows, in which the current week is opened as an agenda.
+Use this to start working with the agenda.
+
+Accepts as prefix argument an integer that specifies the week to open."
+  (interactive "p")
+  ;; TODO: only open if not already open? or maybe use this to always open?
+  (md-agenda--open-agenda-layout) ; splits all the windows in a new frame
+  ;; Note that weeknum defaults to one (via (interactive "p"))
+  (let ((weeknum (if (= weeknum 1)
+                     (second (md-agenda--current-year-week-day))
+                   weeknum))
+        (year (first (md-agenda--current-year-week-day))))
+    (md-agenda-agenda-to-week year weeknum)))
+
+(defun md-agenda-agenda-next-week (&optional week-offset)
+  "Assuming the user is in the agenda view, go to the next week.
+Accepts an integer prefix argument to skip several weeks."
+  (interactive "p")
+  (destructuring-bind
+      (year week day) (md-agenda--year-week-day-of-current-file)
+    (md-agenda-agenda-to-week year (+ (or week-offset 1) week))))
+
+(defun md-agenda-agenda-previous-week (&optional week-offset)
+  "Like md-agenda-agenda-next-week, but with negative argument."
+  (interactive "p")
+  (md-agenda-agenda-next-week (* -1 (or week-offset 1))))
+
+
+
+
+
+
+;; 
+;;;; Misc. functions
 ;;
 
 (defun md-agenda-go-to-agenda-dir ()

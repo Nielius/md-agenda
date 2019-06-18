@@ -1,8 +1,10 @@
 (spacemacs/set-leader-keys-for-major-mode 'markdown-mode
   "at" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'today))))
   "aw" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'this-week))))
-  "ap" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'previous-day))))
-  "an" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'next-day))))
+  "ap" 'md-agenda-agenda-previous-week
+  "an" 'md-agenda-agenda-next-week
+  ;; "ap" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'previous-day))))
+  ;; "an" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'next-day))))
   "ab" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'previous-week))))
   "af" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'next-week))))
   "ao" 'spacemacs/custom-perspective-@Agenda-opruim-layout
@@ -18,7 +20,8 @@
   ;; If I get too many, I may have to move some of them to longer strings.
   "oa" 'md-agenda-go-to-agenda-dir
   "oc" 'md-agenda-go-to-current-week-file
-  "ot" 'md-agenda-go-to-todays-file-and-merge-old-files
+  "ot" 'md-agenda-open-agenda
+  ;; was: "ot" 'md-agenda-go-to-todays-file-and-merge-old-files
   "ow" 'md-agenda-go-to-working-memory)
 
 
@@ -28,8 +31,10 @@
   :bindings
   ("t" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'today)))) "today")
   ("w" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'week)))) "this week")
-  ("p" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'previous-day)))) "previous day")
-  ("n" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'next-day)))) "next day")
+  ("p" md-agenda-agenda-previous-week "previous week")
+  ("n" md-agenda-agenda-next-week "next week")
+  ;; ("p" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'previous-day)))) "previous day")
+  ;; ("n" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'next-day)))) "next day")
   ("b" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'previous-week)))) "previous week")
   ("f" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'next-week)))) "next week")
   ("q" nil :exit t))
