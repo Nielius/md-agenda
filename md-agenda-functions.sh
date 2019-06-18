@@ -1,10 +1,14 @@
 #!/bin/bash
 #
 # Some functions to easily open my markdown agenda files
+#
+# TODO: function to open my activities files?
 
 NIELIUSDOCDIR="${HOME}/doc/"
 
 agenda() {
+    # Open a specific agenda file (or open the working memory file).
+    #
     # Usage:
     #
     # agenda		# interactively ask user for input
@@ -43,4 +47,31 @@ agenda() {
     # %G for iso year number (when used with %V)
     # %V for iso week number
     # %u for day of week
+}
+
+vimagenda() {
+    # Function to open my agenda layout with vim.
+    # I have similar functionality for emacs.
+    #
+    # Usage:
+    #
+    # vimagenda # open current week
+    # vimagenda <weeknum> # open week <weeknum> (integer)
+    #
+    # Installation:
+    # make sure the vimsesfile variable (see below) is set to the correct
+    # file, and also make sure that that file points to the right doc directory.
+    # (I see no good way of avoiding that requirement, although
+    # maybe I could just use a second argument in the vim session.)
+    vimsesfile="md-agenda-vim-session.vim"
+
+    if (( $# < 1 ))
+    then
+        weeknum=$(date +%V)
+        vim -S "$vimsesfile" $weeknum
+    else
+        vim -S "$vimsesfile" $1
+    fi
+
+    unset vimsesfile
 }
