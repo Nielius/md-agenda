@@ -21,6 +21,7 @@
   "oa" 'md-agenda-go-to-agenda-dir
   "oc" 'md-agenda-go-to-current-week-file
   "ot" 'md-agenda-open-agenda
+  "oh" 'niels-go-home-and-open
   ;; was: "ot" 'md-agenda-go-to-todays-file-and-merge-old-files
   "ow" 'md-agenda-go-to-working-memory)
 

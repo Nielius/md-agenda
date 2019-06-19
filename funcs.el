@@ -435,3 +435,15 @@ files."
 (defun md-agenda-go-to-working-memory ()
   (interactive)
   (find-file "~/doc/notes/working-memory.md"))
+
+(defun niels-go-home-and-open ()
+  "Open the \"home screen\", start a search and open the link
+  that is at point after the search."
+  (interactive)
+  (with-selected-window (selected-window)
+    (find-file
+     (concat (file-name-as-directory md-agenda-folder) "../Home.md"))
+    ;; (spacemacs/toggle-centered-buffer-mode) ; dit gaf problemen
+    (goto-char 0)
+    (isearch-forward) ; ik zou natuurlijk ook b.v. helm-swoop kunnen gebruiken
+    (markdown-follow-thing-at-point nil)))
