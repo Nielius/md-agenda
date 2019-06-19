@@ -447,3 +447,26 @@ files."
     (goto-char 0)
     (isearch-forward) ; ik zou natuurlijk ook b.v. helm-swoop kunnen gebruiken
     (markdown-follow-thing-at-point nil)))
+
+
+;; TODO: This should be an addition to helm's possibilities, just like the
+;; insert relative file link thing.
+(defun md-agenda-append-this-file-to-other (filename)
+  "Insert the current file at the end of another (markdown) file,
+with the filename as a header.
+Then delete this file.
+
+This almost could be implemented as a simple call to append-to-file
+and delete-file."
+  (interactive "f")
+  (let*
+      ((this-buffer (current-buffer))
+       (this-filename (buffer-file-name this-buffer)))
+    (progn
+      (find-file filename)
+      (goto-char (point-max))
+      (insert (format "\n\n\# From %s \n\n" (file-name-base this-filename)))
+      (forward-line 4)
+      (insert-file-contents this-filename)
+      (delete-file this-filename t)
+      (kill-buffer this-buffer))))
