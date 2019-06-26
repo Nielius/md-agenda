@@ -5,16 +5,6 @@
 ;; (require 'dash)
 
 
-(defcustom md-agenda-hakyll-site-root (expand-file-name "~/proj/hakyll-site/")
-  "Directory of the Hakyll site where the notes from the markdown-agenda will be compiled..
-Should contain a file 'build-script.sh'."
-  :group 'md-agenda
-  :type 'string)
-
-(defcustom md-agenda-folder "~/doc/notes/agenda"
-  "Folder that contains all markdown agenda files."
-  :type 'string
-  :group 'md-agenda)
 
 
 ;; Functions to get filenames corresponding to certain dates
@@ -236,7 +226,7 @@ md-agenda--extract-default-extension."
   (let ((file-list (md-agenda--get-list-of-files-with-undescriptive-names)))
     (if file-list
         (mapcar 'md-agenda--open-file-and-rename file-list)
-      (message (format "No files with undescriptive suffixes in %s." md-agenda-folder)))))
+      (message (format "No files with undescriptive suffixes in %s." md-agenda-dir)))))
 
 (defun md-agenda--open-file-and-rename (filename)
   (progn
@@ -249,7 +239,7 @@ md-agenda--extract-default-extension."
             )))))
 
 (defun md-agenda--get-list-of-files-with-undescriptive-names ()
-  (directory-files md-agenda-folder t "^20[0-9]\\{2\\}-W[0-9]\\{2\\}-[1-7]-[0-9]*.md"))
+  (directory-files md-agenda-dir t "^20[0-9]\\{2\\}-W[0-9]\\{2\\}-[1-7]-[0-9]*.md"))
 
 
 ;; This may be a useful function?
@@ -275,7 +265,7 @@ md-agenda--extract-default-extension."
 optional argument is given, get all files that correspond to a
 day that is before `latest-date' (which should be the filename of
 a date file represented as a string)."
-  (let ((allfiles (directory-files md-agenda-folder t "^20[0-9]\\{2\\}-W[0-9]\\{2\\}-[1-7].md"))
+  (let ((allfiles (directory-files md-agenda-dir t "^20[0-9]\\{2\\}-W[0-9]\\{2\\}-[1-7].md"))
         (latest-date-chopped (file-name-base latest-date)))
     (if latest-date
         (-filter (lambda (x) (string<  (file-name-base x) latest-date-chopped)) allfiles)
@@ -356,7 +346,7 @@ If year is nil, use current year."
             (progn
               (select-window window)
               (find-file
-               (concat (file-name-as-directory md-agenda-folder)
+               (concat (file-name-as-directory md-agenda-dir)
                        (md-agenda--get-file-name-for-year-week-day year week i)))
               (setf i (+ i 1))))
           md-agenda--agenda-layout-windows)))
@@ -401,7 +391,7 @@ Accepts an integer prefix argument to skip several weeks."
 (defun md-agenda-go-to-agenda-dir ()
   (interactive)
   (progn
-    (find-file md-agenda-folder)
+    (find-file md-agenda-dir)
     (dired-sort-other "-alt")
     (beginning-of-buffer)
     (forward-line 5)))
@@ -410,7 +400,7 @@ Accepts an integer prefix argument to skip several weeks."
   (interactive)
   ;; You could also go to the file "current-week.md", but I use
   ;; that one mostly as a trick to get easy links on my phone.
-  (find-file (concat (file-name-as-directory md-agenda-folder)
+  (find-file (concat (file-name-as-directory md-agenda-dir)
                      (apply #'md-agenda--get-file-name-for-year-week
                             (md-agenda--current-year-week-day)))))
 
@@ -418,7 +408,7 @@ Accepts an integer prefix argument to skip several weeks."
   (interactive)
   ;; You could also go to the file "current-week.md", but I use
   ;; that one mostly as a trick to get easy links on my phone.
-  (find-file (concat (file-name-as-directory md-agenda-folder)
+  (find-file (concat (file-name-as-directory md-agenda-dir)
                      (apply #'md-agenda--get-file-name-for-year-week-day
                             (md-agenda--current-year-week-day)))))
 
@@ -442,7 +432,7 @@ files."
   (interactive)
   (with-selected-window (selected-window)
     (find-file
-     (concat (file-name-as-directory md-agenda-folder) "../Home.md"))
+     (concat (file-name-as-directory md-agenda-dir) "../Home.md"))
     ;; (spacemacs/toggle-centered-buffer-mode) ; dit gaf problemen
     (goto-char 0)
     (isearch-forward) ; ik zou natuurlijk ook b.v. helm-swoop kunnen gebruiken
