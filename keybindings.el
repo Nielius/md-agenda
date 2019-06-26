@@ -19,10 +19,10 @@
 (spacemacs/set-leader-keys
   ;; If I get too many, I may have to move some of them to longer strings.
   "oa" 'md-agenda-go-to-agenda-dir
+  ;; "oA" 'md-agenda-go-to-todays-file-and-merge-old-files ; I have commented this, because I now want to test a different workflow
   "oc" 'md-agenda-go-to-current-week-file
   "ot" 'md-agenda-open-agenda
   "oh" 'niels-go-home-and-open
-  ;; was: "ot" 'md-agenda-go-to-todays-file-and-merge-old-files
   "ow" 'md-agenda-go-to-working-memory)
 
 
