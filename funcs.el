@@ -1,12 +1,3 @@
-;; Requirements:
-;; - cal-iso.el and cal.el
-;; - common lisp functions? (at least destructuring-bind)
-
-;; (require 'dash)
-
-
-
-
 ;; Functions to get filenames corresponding to certain dates
 ;;
 
