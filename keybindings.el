@@ -1,4 +1,5 @@
 (spacemacs/set-leader-keys-for-major-mode 'markdown-mode
+  "p" 'markdown-paste-as-relative-link
   "at" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'today))))
   "aw" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'this-week))))
   "ap" 'md-agenda-agenda-previous-week
@@ -21,9 +22,7 @@
   "oa" 'md-agenda-go-to-agenda-dir
   ;; "oA" 'md-agenda-go-to-todays-file-and-merge-old-files ; I have commented this, because I now want to test a different workflow
   "oc" 'md-agenda-go-to-current-week-file
-  "ot" 'md-agenda-open-agenda
-  "oh" 'niels-go-home-and-open
-  "ow" 'md-agenda-go-to-working-memory)
+  "ot" 'md-agenda-open-agenda)
 
 
 (spacemacs|define-transient-state md-agenda-transient-state
@@ -39,5 +38,3 @@
   ("b" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'previous-week)))) "previous week")
   ("f" (lambda () (interactive) (find-file (concat md-agenda-dir (md-agenda--get-file-name 'next-week)))) "next week")
   ("q" nil :exit t))
-
-

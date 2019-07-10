@@ -1,5 +1,7 @@
 ;; Functions to get filenames corresponding to certain dates
 ;;
+;; A lot of this is going back and forth between different ways to represent the
+;; date... There should probably be a nicer pattern for this.
 
 (defun md-agenda--get-file-name (desc)
   "Return the file name for my agenda file for a specific date.
@@ -27,7 +29,6 @@ of days from today (positive, negative or zero)."
       ('this-week
        (apply #'md-agenda--get-file-name-for-year-week (md-agenda--current-year-week-day))))))
 
-
 (defun md-agenda--get-file-name-for-year-week-day (year week day)
   (format "%d-W%02d-%d.md" year week day))
 
@@ -35,19 +36,8 @@ of days from today (positive, negative or zero)."
   ;; ignore if we also give a day
   (format "%d-W%02d-planning.md" year week))
 
-
-;; General functions to manipulate ISO week dates
-;;
-;; (defun md-agenda--current-year-week-day ())
-;; (defun md-agenda--add-iso-week-dates (date1 date2))
-;;
-;; iso-cal is pretty shitty...
-;; Probably better to rewrite
-
-
 (defun md-agenda--current-year-week-day ()
   (md-agenda--emacs-time-to-year-week-day (current-time)))
-
 
 (defun md-agenda--add-iso-week-dates (date1 date2)
   "Adds two iso week dates.
@@ -60,36 +50,22 @@ arbitrarily large and negative."
       (mapcar* #'+ date1 date2)
     (md-agenda--renormalize-iso-week-date year week day)))
 
-
 (defun md-agenda--renormalize-iso-week-date (year week day)
   "Renormalizes the iso week date, i.e., if the week number or
   day number is larger than it should be, or even if it is negative."
   (md-agenda--emacs-time-to-year-week-day
    (encode-time 0 0 0 (+ (- day 1) (* 7 (- week 1))) 1 year)))
 
-
 (defun md-agenda--emacs-time-to-year-week-day (emacstime)
-  (mapcar
+  (mapca
    (lambda (x)
      (string-to-number (format-time-string x emacstime)))
    (list "%G" "%V" "%u")))
 
-;; Test-functions
-;; (md-agenda--renormalize-iso-week-date 2019 1 8) -> 2019 2 1
-;; (md-agenda--renormalize-iso-week-date 2019 2 0) -> 2019 1 7
-;; (md-agenda--renormalize-iso-week-date 2019 2 -1) -> 2019 1 6
-
-
-;; A lot of this is going back and forth between different ways to represent the
-;; date... There should probably be a nicer pattern for this.
-
-;; This function is not necessary anymore, since we started using
-;; md-agenda--renormalize-iso-week-date.
-(defun md-agenda--year-week-day-to-time (year weekn dayn)
-  "Convert a date given by year, week number and day number to an
-emacs time format. The week number and days can be out of range
-(i.e., day can be 8 or -12 or...) and it should still work. "
-  (encode-time 0 0 0 (+ dayn (* 7 (- weekn 1))) 1 year))
+(defun md--get-day-from-filename (filename)
+  (if (string-match "\\([0-9]\\{4\\}-W[0-9]\\{2\\}-[1-7]\\)" filename)
+      (match-string-no-properties 0 filename)
+    nil))
 
 (defun md-agenda--year-week-day-of-current-file ()
   "Get the year, week and day of the current file,
@@ -101,8 +77,20 @@ Returns '(YEAR WEEK DAY)."
           (let ((n (string-to-number (substring filename 9 10))))
             (if (= n 0) 1 n)))))
 
+;; Test-functions (far from a complete test suite)
+(eval-when-compile
+  (assert (equal (md-agenda--renormalize-iso-week-date 2019 1 8) '(2019 2 1)))
+  (assert (equal (md-agenda--renormalize-iso-week-date 2019 2 0) '(2019 1 7)))
+  (assert (equal (md-agenda--renormalize-iso-week-date 2019 2 -1) '(2019 1 6)))
 
-;; Renaming files
+  (assert (equal (md--get-day-from-filename "2018-W34-4-123123.md") "2018-W34-4"))
+  (assert (equal (md--get-day-from-filename "2018-W34-9-123123.md") nil))
+  (assert (equal (md--get-day-from-filename "shouldntwork") nil))
+  )
+
+
+;; 
+;; Functions for renaming timestamped files
 ;;
 
 (defun md-agenda-rename-this-file (new-suffix)
@@ -138,45 +126,16 @@ a file called 2018-W31-1-123412.md can be renamed to
         (message "File '%s' successfully renamed to '%s'" filename new-filename))
       ))))
 
-
-(defun md--get-day-from-filename (filename)
-  (if (string-match "\\([0-9]\\{4\\}-W[0-9]\\{2\\}-[1-7]\\)" filename)
-      (match-string-no-properties 0 filename)
-    nil))
-
-(defun md-agenda-compile-hakyll-site (&optional git-pull-q)
-  "Compile the Hakyll site.
-With prefix argument, also git pull before compiling."
-  (interactive "P")
-  (let ((buildscript (concat
-                      (file-name-as-directory md-agenda-hakyll-site-root)
-                      "build-script.sh"
-                      (if git-pull-q
-                          " -g"
-                        ""))))
-    (async-shell-command buildscript)))
-
-(defun md-agenda-open-file-in-hakyll-site (&optional new-window-q)
-  "Open the current markdown agenda file in the hakyll site.
-With prefix argument, open it in new firefox window."
-  (interactive "P")
-  (let*
-      ((project-root (projectile-project-root))
-       (rel-filename-sans-ext (file-name-sans-extension (file-relative-name (buffer-file-name) project-root)))
-       (target-html-file
-        (concat
-         (file-name-as-directory md-agenda-hakyll-site-root)
-         "_site/doc/"
-         rel-filename-sans-ext
-         ".html")))
-    (browse-url-firefox target-html-file new-window-q)))
-
-
-;; Test:
-;; (md--get-day-from-filename "2018-W34-4-123123.md") ; should return "2018-W34-4"
-;; (md--get-day-from-filename "shouldntwork") ; should return nil
-;; (md--get-day-from-filename nil) ; should return nil?
-
+(defun md-agenda-rename-file-with-default-extension ()
+  "Suggest to rename the file to the title given by the function
+md-agenda--extract-default-extension."
+  (interactive)
+  (let ((new-suffix (md-agenda--extract-default-extension) ))
+    (if (y-or-n-p (format "Rename file with suffix %s?" new-suffix))
+        (md-agenda-rename-this-file new-suffix)
+      (progn
+        (message "Aborted.")
+        nil))))
 
 (defun md-agenda--get-first-line ()
   "Helper function: get the first line of the buffer."
@@ -193,27 +152,15 @@ hyphens in between the words."
     (replace-regexp-in-string "[^[:alnum:] _-]" "" (downcase (md-agenda--get-first-line))))
    "-"))
 
-(defun md-agenda-rename-file-with-default-extension ()
-  "Suggest to rename the file to the title given by the function
-md-agenda--extract-default-extension."
-  (interactive)
-  (let ((new-suffix (md-agenda--extract-default-extension) ))
-    (if (y-or-n-p (format "Rename file with suffix %s?" new-suffix))
-        (md-agenda-rename-this-file new-suffix)
-      (progn
-        (message "Aborted.")
-        nil))))
-
-
-;; Functions for starting a file renaming session.
-;; ---
-;; This cycles through all files without a descriptive name
-;; (these are files that automatically get a timestamp instead of an appropriate name)
-;; and lets you rename them.
+;; 
+;;; Functions for starting a file renaming session
+;;
+;; Main function: `md-agenda-start-renaming-session'.
 
 (defun md-agenda-start-renaming-session ()
+  "Walk through all timestamped files and ask the user to give
+them to a more descriptive name."
   (interactive)
-  ;; (md-agenda-start-renaming-session--loop (md-agenda--get-list-of-files-with-undescriptive-names))
   (let ((file-list (md-agenda--get-list-of-files-with-undescriptive-names)))
     (if file-list
         (mapcar 'md-agenda--open-file-and-rename file-list)
@@ -233,34 +180,11 @@ md-agenda--extract-default-extension."
   (directory-files md-agenda-dir t "^20[0-9]\\{2\\}-W[0-9]\\{2\\}-[1-7]-[0-9]*.md"))
 
 
-;; This may be a useful function?
-(defun save-this-file-name ()
-  "Append the filename of the current buffer to the buffer named
- '*saved-files-names*'."
-  (interactive)
-  (let
-      ((filename (buffer-file-name))
-       (targetbuffer
-        (get-buffer-create "*saved-file-names*"))
-       )
-    (with-current-buffer targetbuffer
-      (insert (concat filename "\n")))))
-
-
+;; 
 ;; Functions for inserting old date files
 ;;
-;; See especially: md-agenda--insert-all-older-files
-(defun md-agenda--get-list-of-date-files (&optional latest-date)
-  "Get all files of the form
-20[0-9]\\{2\\}-W[0-9]\\{2\\}-[1-7].md (i.e., date files). If the
-optional argument is given, get all files that correspond to a
-day that is before `latest-date' (which should be the filename of
-a date file represented as a string)."
-  (let ((allfiles (directory-files md-agenda-dir t "^20[0-9]\\{2\\}-W[0-9]\\{2\\}-[1-7].md"))
-        (latest-date-chopped (file-name-base latest-date)))
-    (if latest-date
-        (-filter (lambda (x) (string<  (file-name-base x) latest-date-chopped)) allfiles)
-      allfiles)))
+;; Main funtion: md-agenda--insert-all-older-files, which insert into the
+;; current file all date files that are older than the current file.
 
 (defun md-agenda--insert-all-older-files ()
   "When executed in a date file (i.e., a file of the form \"2019-W33-4.md\"),
@@ -281,19 +205,47 @@ a date file represented as a string)."
               (insert "\n\n")
               )) file-list)))
 
+(defun md-agenda--get-list-of-date-files (&optional latest-date)
+  "Get all files of the form
+20[0-9]\\{2\\}-W[0-9]\\{2\\}-[1-7].md (i.e., date files). If the
+optional argument is given, get all files that correspond to a
+day that is before `latest-date' (which should be the filename of
+a date file represented as a string)."
+  (let ((allfiles (directory-files md-agenda-dir t "^20[0-9]\\{2\\}-W[0-9]\\{2\\}-[1-7].md"))
+        (latest-date-chopped (file-name-base latest-date)))
+    (if latest-date
+        (-filter (lambda (x) (string<  (file-name-base x) latest-date-chopped)) allfiles)
+      allfiles)))
+
 
 ;; 
 ;;;; Agenda layout functions
 ;;
-;; These are functions that provide a layout of a week that looks like an actual, physical agenda.
+;; These are functions that provide a layout of a week that looks like an
+;; actual, physical agenda.
 ;;
-;;;; Functions:
+;; Overview of the functions:
 ;;
-;; md-agenda--open-agenda-layout () --- only new frame with split windows
-;; md-agenda-open-agenda (&optional weeknum) --- open agenda (on (or weeknum thisweek))
-;; md-agenda-agenda-to-week (year week) --- assumes agenda is already open and sets the agenda to the given week
-;; md-agenda-agenda-next-week () --- assumes user is in the agenda and goes to the next week
-
+;; md-agenda--open-agenda-layout ()
+;; --- open new frame with windows split as I want them for the agenda;
+;;     does not open any agenda files.
+;;
+;; md-agenda-open-agenda (&optional weeknum)
+;; --- open agenda on <weeknum> (if given) or on the current week (otherwise).
+;;
+;; md-agenda-agenda-to-week (year week)
+;; --- assumes agenda is already open (see note below) and sets the
+;;     agenda to the given week.
+;;
+;; md-agenda-agenda-next-week ()
+;; --- assumes user is in the agenda and goes to the next week.
+;;
+;;
+;; Note on the implementation:
+;; The windows that are opened for the agenda layout are saved in the variable
+;; `md-agenda--agenda-layout-windows', so that `md-agenda-agenda-to-week' and
+;; `md-agenda-agenda-next-week' can use this variable to change the files that
+;; the windows are visiting.
 
 
 (defun md-agenda--open-agenda-layout ()
@@ -371,13 +323,38 @@ Accepts an integer prefix argument to skip several weeks."
   (md-agenda-agenda-next-week (* -1 (or week-offset 1))))
 
 
-
-
-
-
 ;; 
-;;;; Misc. functions
+;;;; Convenience functions
 ;;
+
+
+(defun md-agenda-paste-as-relative-link (&optional filename)
+  "Pastes the filename in the kill ring as a relative link.
+Useful in combination with `spacemacs/copy-fily-path', which
+copies the path to the file that is being visited in the current
+buffer. This makes it easier to use simple markdown files as a
+kind of personal wiki.
+
+If the optional argument FILENAME is given, then make a link to
+that file, instead of to the filename in the kill ring."
+  (interactive)
+  (let
+      ((filename
+        (if filename ; if the optional argument is given,
+            filename ; use that
+          (substring-no-properties ; otherwise, kill ring
+           (car kill-ring)))))
+    (unless (eolp) (forward-char)) ; necessary to get evil's normal paste-after effect
+    (insert-for-yank
+     (concat
+      "["
+      (file-name-base filename)
+      "]("
+      (s-trim
+       (file-relative-name filename
+                           (file-name-directory (buffer-file-name))))
+      ")"))))
+
 
 (defun md-agenda-go-to-agenda-dir ()
   (interactive)
@@ -413,41 +390,34 @@ files."
     (goto-char (point-max))
     (md-agenda--insert-all-older-files)))
 
-(defun md-agenda-go-to-working-memory ()
-  (interactive)
-  (find-file "~/doc/notes/working-memory.md"))
 
-(defun niels-go-home-and-open ()
-  "Open the \"home screen\", start a search and open the link
-  that is at point after the search."
-  (interactive)
-  (with-selected-window (selected-window)
-    (find-file
-     (concat (file-name-as-directory md-agenda-dir) "../Home.md"))
-    ;; (spacemacs/toggle-centered-buffer-mode) ; dit gaf problemen
-    (goto-char 0)
-    (isearch-forward) ; ik zou natuurlijk ook b.v. helm-swoop kunnen gebruiken
-    (markdown-follow-thing-at-point nil)))
+;; 
+;; Functions for compiling with Hakyll
 
+(defun md-agenda-compile-hakyll-site (&optional git-pull-q)
+  "Compile the Hakyll site.
+With prefix argument, also git pull before compiling."
+  (interactive "P")
+  (let ((buildscript (concat
+                      (file-name-as-directory md-agenda-hakyll-site-root)
+                      "build-script.sh"
+                      (if git-pull-q
+                          " -g"
+                        ""))))
+    (async-shell-command buildscript)))
 
-;; TODO: This should be an addition to helm's possibilities, just like the
-;; insert relative file link thing.
-(defun md-agenda-append-this-file-to-other (filename)
-  "Insert the current file at the end of another (markdown) file,
-with the filename as a header.
-Then delete this file.
-
-This almost could be implemented as a simple call to append-to-file
-and delete-file."
-  (interactive "f")
+(defun md-agenda-open-file-in-hakyll-site (&optional new-window-q)
+  "Open the current markdown agenda file in the hakyll site.
+With prefix argument, open it in new firefox window."
+  (interactive "P")
   (let*
-      ((this-buffer (current-buffer))
-       (this-filename (buffer-file-name this-buffer)))
-    (progn
-      (find-file filename)
-      (goto-char (point-max))
-      (insert (format "\n\n\# From %s \n\n" (file-name-base this-filename)))
-      (forward-line 4)
-      (insert-file-contents this-filename)
-      (delete-file this-filename t)
-      (kill-buffer this-buffer))))
+      ((project-root (projectile-project-root))
+       (rel-filename-sans-ext (file-name-sans-extension (file-relative-name (buffer-file-name) project-root)))
+       (target-html-file
+        (concat
+         (file-name-as-directory md-agenda-hakyll-site-root)
+         "_site/doc/"
+         rel-filename-sans-ext
+         ".html")))
+    (browse-url-firefox target-html-file new-window-q)))
+
