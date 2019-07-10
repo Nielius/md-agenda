@@ -389,35 +389,3 @@ files."
   (save-excursion
     (goto-char (point-max))
     (md-agenda--insert-all-older-files)))
-
-
-;; 
-;; Functions for compiling with Hakyll
-
-(defun md-agenda-compile-hakyll-site (&optional git-pull-q)
-  "Compile the Hakyll site.
-With prefix argument, also git pull before compiling."
-  (interactive "P")
-  (let ((buildscript (concat
-                      (file-name-as-directory md-agenda-hakyll-site-root)
-                      "build-script.sh"
-                      (if git-pull-q
-                          " -g"
-                        ""))))
-    (async-shell-command buildscript)))
-
-(defun md-agenda-open-file-in-hakyll-site (&optional new-window-q)
-  "Open the current markdown agenda file in the hakyll site.
-With prefix argument, open it in new firefox window."
-  (interactive "P")
-  (let*
-      ((project-root (projectile-project-root))
-       (rel-filename-sans-ext (file-name-sans-extension (file-relative-name (buffer-file-name) project-root)))
-       (target-html-file
-        (concat
-         (file-name-as-directory md-agenda-hakyll-site-root)
-         "_site/doc/"
-         rel-filename-sans-ext
-         ".html")))
-    (browse-url-firefox target-html-file new-window-q)))
-
