@@ -57,7 +57,7 @@ arbitrarily large and negative."
    (encode-time 0 0 0 (+ (- day 1) (* 7 (- week 1))) 1 year)))
 
 (defun md-agenda--emacs-time-to-year-week-day (emacstime)
-  (mapca
+  (mapcar
    (lambda (x)
      (string-to-number (format-time-string x emacstime)))
    (list "%G" "%V" "%u")))
