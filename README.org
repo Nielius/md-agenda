@@ -1,4 +1,4 @@
-#+TITLE: md-agenda layer
+#+TITLE: md-agenda: A hackable, plain text markdown agenda/calendar and notes system
 #+HTML_HEAD_EXTRA: <link rel="stylesheet" type="text/css" href="../css/readtheorg.css" />
 
 #+CAPTION: logo
@@ -6,8 +6,208 @@
 
 * Table of Contents                                        :TOC_4_org:noexport:
 - [[Description][Description]]
+  - [[Free-form calendar][Free-form calendar]]
+  - [[Timestamped, small notes][Timestamped, small notes]]
+  - [[Comparison to org-mode][Comparison to org-mode]]
+- [[Configuration][Configuration]]
+- [[Description of functions?][Description of functions?]]
+- [[Workflows][Workflows]]
+- [[Suggested Emacs key bindings][Suggested Emacs key bindings]]
+- [[Suggested related tools][Suggested related tools]]
+- [[TODO][TODO]]
 
 * Description
-This layer does wonderful things:
-  - thing01
+  
+~md-agenda~ is a collection of Emacs lisp code and associated shell scripts
+which aims to provide a plain text (markdown) agenda/calendar and notes system
+that is
+
+- hackable
+--- it should be easy to extend or modify to suit your needs.
+
+- easily self-hosted
+--- if you want to use the system on several devices,
+you only need some way to easily share plain text files,
+such as 
+[[https://syncthing.net/][Syncthing]]
+(open-source, self-hosted, similar to Dropbox).
+
+- future-proof
+--- and even if all the ~md-agenda~ code were lost,
+it should still be possible to easily read and edit any of the agenda files.
+
+- readable and editable without any special tools
+--- though the code in this git repo should make it a lot more convenient to work with your files,
+a simple text editor should suffice in principle.
+
+- accessible from any device
+--- you should be able to view your agenda on your desktop,
+laptop, phone and anywhere else.
+
+- minimalistic
+
+Many of the goals listed above overlap and reinforce eachother;
+e.g., by being minimalistic,
+it is much easier to host yourself,
+and if you don't need any special tools,
+then it's easy to access from many devices.
+
+This project grew organically to suit my own needs.
+I've tried to rewrite and document things in such a way 
+that it might also be usable by other people
+and maybe spur some new ideas.
+Read on to find out more
+about the two main components of this system,
+both of which consist of Emacs functions and some additional tools:
+(1) a system for managing a weekly agenda/calendar with free-form text;
+and (2) a system to easily create and organize small notes.
+
+
+** Free-form calendar
+
+When I still had a physical calendar,
+I used it for a lot more than simply saving appointments:
+I used it for planning my day,
+for writing down reminders,
+for quickly jotting down notes
+and much more.
+With applications like Google Calendar
+(which ~md-agenda~ is not intended to fully replace),
+I don't find this convenient
+and am too restricted by the rigid input formats that such a calendar allows.
+
+With ~md-agenda~, I tried to solve that problem in the following, simple way.
+Every day has its own markdown file:
+the 4th day of the 25th week of 2019, for example,
+is stored in ~<md-agenda-dir>/2019-W25-4.md~
+(~md-agenda-dir~ is a variable that can be customized).
+In this file, I can type anything I want,
+just as I could with a physical calendar,
+but with some added benefits:
+(linking to files/sites,
+easily copying/pasting, ...).
+
+Some of the functionality of ~md-agenda~ that makes it easy to use this system:
+
+- ~md-agenda-open-agenda~ opens a new frame with one window for each day in the current week,
+structured in a way similar to what you'd expect in a physical weekly calendar.
+With functions like ~md-agenda-agenda-next-week~,
+~md-agenda-agenda-previous-week~
+and
+~md-agenda-agenda-to-week~,
+you can easily "flip through the calendar" and view the files belonging to other weeks.
+
+- similarly, if you want to use vim,
+you can use ....
+TODO (this is one of the bash scripts)
+
+- also, on any device with a web browser,
+you can simply open ~agenda.html~,
+which is a very simple HTML file that you can use to view your files for every week.
+A very simple piece of javascript allows you to view other weeks.
+(TODO: this file's aesthetics can use some improvement.)
+
+- TODO: insert screenshot
+- TODO: explain functions better, especially the shell scripts
+
+** Timestamped, small notes
+   
+In addition to the calendar functions explained above,
+the collection contains some functions that make it easy to very quickly
+make small notes that you can still find back later.
+
+Again, the idea is simple:
+with a simple shell script
+(TODO: which one? useful to bind this to a global shortcut),
+you create a markdown file in the directory ~md-agenda-dir~
+with a filename based on the current day and time,
+e.g. ~2019-W25-4-214830.md~
+for a file made on the fourth day (i.e., Thursday) of the 25th week of 2019 at 21:48:30.
+In this way, you can quite easily find the file back
+and you are also sure that you will not have two files with the same name.
+
+If you want to give your file a more descriptive name,
+you can use the function
+~md-agenda-rename-file-with-default-extension~
+to rename it with a name based on the first line in the file.
+If you do this often and want to clean up a lot of these small note files,
+you can use ~md-agenda-start-renaming-session~
+to start an interactive session for cleaning them up and renaming them.
+
+To be able to do this on Android,
+install Termux.
+To make it even quicker,
+put the script that makes the timestamped file in the ~~/.shortcuts~ folder in Termux.
+
+- TODO: explain some of the bash files
+
+** Comparison to org-mode
+
+Org-mode provides many of the features of
+this collection of tools
+and much, much more.
+Many people use it,
+it has existed for quite some time
+and if you do not know it,
+it is probably [[https://orgmode.org/][worth checking out]].
+This project, however, is  more minimalist
+and therefore easier to understand, adapt
+and use on other systems (such as Android).
+
+The two can, however, quite easily be combined.
+I now use markdown for the agenda files,
+but nothing would in principle stop you from using org-mode files,
+which is what I did at first.
+At some point, I decided to switch over to markdown
+because its more minimal design
+and more widespread use has led to better support 
+(for example, there are many apps for iOS and Android that can edit markdown files
+(though now there is also [[https://github.com/orgzly/orgzly-android][Orgzly]] to edit org-mode),
+and it is easier to convert to other data formats).
+
+markdown has better and support
+
+
+Two main parts:
+
+- handling timestamped files
+- handling agenda files
+
+Moreover, some convenience functions.
+
+* Configuration
+
+Be sure to set ~md-agenda-dir~:
+this is the directory where both the agenda files
+and the timestamped notes will be stored.
+
+Possibly set global keyboard shortcuts?
+
+* Description of functions?
+  
+TODO
+
+* Workflows
+  
+TODO
+
+
+* Suggested Emacs key bindings
+  
+TODO
+
+* Suggested related tools
+
+I have found the following open source tools 
+to be very convenient in combination with this system:
+  
+- [[https://syncthing.net/][Syncthing]] to sync the files between devices.
+- [[https://gsantner.net/project/markor.html][Markor]] to edit markdown files on Android devices.
+- [[https://termux.com/][Termux]] to run Linux shell scripts on Android.
+
+
+* TODO
+
+- [ ] Turn into package instead of spacemacs layer.
+- [ ] More functionality in the clean-up session (~md-agenda-start-renaming-session~)
 
