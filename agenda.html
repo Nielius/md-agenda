@@ -1,0 +1,81 @@
+<!-- Place this file in the same directory as the agenda files. -->
+<html>
+    <head>
+    <title>Test</title>
+    <script>
+     function getWeekNumber(d) {
+         // Copy date so don't modify original
+         d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+         // Set to nearest Thursday: current date + 4 - current day number
+         // Make Sunday's day number 7
+         d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+         // Get first day of year
+         var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+         // Calculate full weeks to nearest Thursday
+         var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+         // Return array of year and week number
+         return [d.getUTCFullYear(), weekNo];
+     };
+
+     var yearweek = getWeekNumber(new Date());
+
+     function setToWeek(year, week) {
+         var i = 1;
+         var allframes=document.getElementsByTagName('iframe');
+
+         for(i = 1; i < 8; i++) {
+             allframes[i - 1].src= year + "-W" + week + "-" + i + ".md";
+         }
+
+         document.getElementById('weekdiv').innerHTML = year + " W" + week;
+     };
+
+     function addWeeks(n) {
+         /* Add n weeks to the global var yearweek */
+         yearweek[1] += n;
+         while (yearweek[1] > 52) {
+             yearweek[1] -= 52;
+             yearweek[0] += 1;
+         }
+         while (yearweek[1] < 1) {
+             yearweek[1] += 52;
+             yearweek[0] -= 1;
+         }
+     };
+
+
+     function nextWeek() {
+         addWeeks(1);
+         setToWeek(yearweek[0], yearweek[1]);
+     };
+
+     function previousWeek() {
+         addWeeks(-1);
+         setToWeek(yearweek[0], yearweek[1]);
+     };
+
+     function currentWeek() {
+         yearweek = getWeekNumber(new Date());
+         setToWeek(yearweek[0], yearweek[1]);
+     };
+
+     window.onload = setToWeek(yearweek[0], yearweek[1]);
+    </script>
+
+    </head>
+    <body>
+        <div id="weekdiv">2019 W25</div>
+        <iframe src="2019-W25-1.md" height="200" width="300"></iframe>
+        <iframe src="2019-W25-2.md" height="200" width="300"></iframe>
+        <iframe src="2019-W25-3.md" height="200" width="300"></iframe>
+        <iframe src="2019-W25-4.md" height="200" width="300"></iframe>
+        <iframe src="2019-W25-5.md" height="200" width="300"></iframe>
+        <iframe src="2019-W25-6.md" height="200" width="300"></iframe>
+        <iframe src="2019-W25-7.md" height="200" width="300"></iframe>
+
+        <button onclick="previousWeek()">Previous week</button>
+        <button onclick="nextWeek()">Next week</button>
+        <button onclick="currentWeek()">Current week</button>
+
+    </body>
+</html>
