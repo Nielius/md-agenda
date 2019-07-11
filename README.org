@@ -222,6 +222,12 @@ to be very convenient in combination with this system:
 
 * TODO
 
+- [ ] Change shellscripts so that you can easily customize the directory.
+- [ ] Work on documentation.
+  - [ ] Interweave section on shell scripts into the rest
+  - [ ] Fill in TODOs.
+  - [ ] Why don't the org-mode links in the TOC work?
 - [ ] Turn into package instead of spacemacs layer.
 - [ ] More functionality in the clean-up session (~md-agenda-start-renaming-session~)
+
 
