@@ -1,9 +1,3 @@
-(defcustom md-agenda-hakyll-site-root (expand-file-name "~/proj/hakyll-site/")
-  "Directory of the Hakyll site where the notes from the markdown-agenda will be compiled..
-Should contain a file 'build-script.sh'."
-  :group 'md-agenda
-  :type 'string)
-
 (defcustom md-agenda-dir "~/doc/notes/agenda"
   "Directory that contains all markdown agenda files."
   :type 'string
