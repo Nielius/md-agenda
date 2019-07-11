@@ -13,6 +13,7 @@
 - [[Description of functions?][Description of functions?]]
 - [[Workflows][Workflows]]
 - [[Suggested Emacs key bindings][Suggested Emacs key bindings]]
+- [[Shell scripts][Shell scripts]]
 - [[Suggested related tools][Suggested related tools]]
 - [[TODO][TODO]]
 
@@ -195,6 +196,19 @@ TODO
 * Suggested Emacs key bindings
   
 TODO
+
+* Shell scripts
+
+These are the shell scripts that can be used with ~md-agenda~:
+
+Scripts for quickly creating notes:
+~shell-tools/create-note-vim.sh~ and
+~shell-tools/create-note-markor.sh~.
+
+Scripts for opening and viewing the weekly calendar:
+~shell-tools/md-agenda-functions.sh~,
+~shell-tools/md-agenda-vim-session.vim~ and
+~shell-tools/agenda-open-day.sh~.
 
 * Suggested related tools
 
